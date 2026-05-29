@@ -1,0 +1,104 @@
+version: '3.9'
+
+x-airflow-common: &airflow-common
+  image: apache/airflow:2.9.2
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow_db:5432/airflow
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    ERP_API_KEY: ${ERP_API_KEY}
+    LAKE_HOST: lake_db
+    LAKE_PORT: 5432
+    LAKE_DB: lake
+    LAKE_USER: ${LAKE_USER}
+    LAKE_PASSWORD: ${LAKE_PASSWORD}
+    WH_HOST: warehouse_db
+    WH_PORT: 5432
+    WH_DB: warehouse
+    WH_USER: ${WH_USER}
+    WH_PASSWORD: ${WH_PASSWORD}
+  volumes:
+    - ./airflow/dags:/opt/airflow/dags
+    - ./extractor:/opt/airflow/extractor
+    - ./dlt_pipeline:/opt/airflow/dlt_pipeline
+    - ./dbt_retailco:/opt/airflow/dbt_retailco
+  depends_on:
+    airflow_db:
+      condition: service_healthy
+
+services:
+  lake_db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: lake
+      POSTGRES_USER: ${LAKE_USER}
+      POSTGRES_PASSWORD: ${LAKE_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - lake_data:/var/lib/postgresql/data
+      - ./init_scripts/lake_init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${LAKE_USER} -d lake"]
+      interval: 5s
+      retries: 5
+
+  warehouse_db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: warehouse
+      POSTGRES_USER: ${WH_USER}
+      POSTGRES_PASSWORD: ${WH_PASSWORD}
+    ports:
+      - "5434:5432"
+    volumes:
+      - warehouse_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${WH_USER} -d warehouse"]
+      interval: 5s
+      retries: 5
+
+  airflow_db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: airflow
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+    volumes:
+      - airflow_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow -d airflow"]
+      interval: 5s
+      retries: 5
+
+  airflow-init:
+    <<: *airflow-common
+    command: >
+      bash -c "airflow db migrate && airflow users create
+      --username admin --password admin
+      --firstname Admin --lastname User
+      --role Admin --email admin@example.com"
+    depends_on:
+      airflow_db:
+        condition: service_healthy
+
+  airflow-webserver:
+    <<: *airflow-common
+    ports:
+      - "8080:8080"
+    command: webserver
+    depends_on:
+      airflow_db:
+        condition: service_healthy
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    depends_on:
+      airflow_db:
+        condition: service_healthy
+
+volumes:
+  lake_data:
+  warehouse_data:
+  airflow_db_data:

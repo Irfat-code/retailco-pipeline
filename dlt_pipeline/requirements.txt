@@ -1,0 +1,2 @@
+dlt[postgres]==0.4.12
+python-dotenv==1.0.0
