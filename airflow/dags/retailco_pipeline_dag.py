@@ -43,7 +43,7 @@ with DAG(
     description='RetailCo full pipeline: ERP → Lake → Warehouse → dbt',
     schedule_interval='@daily',
     start_date=datetime(2024, 1, 1),
-    catchup=True,
+    catchup=False,
     max_active_runs=1,
     tags=['retailco', 'stage8'],
 ) as dag:
