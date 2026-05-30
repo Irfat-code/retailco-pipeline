@@ -5,5 +5,7 @@ select
     store_name,
     city,
     state,
-    manager_employee_id
+    address,
+    phone,
+    manager_name
 from {{ ref('stg_stores') }}

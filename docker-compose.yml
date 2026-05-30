@@ -1,7 +1,7 @@
-version: '3.9'
-
 x-airflow-common: &airflow-common
   image: apache/airflow:2.9.2
+  env_file:
+    - .env
   environment:
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow_db:5432/airflow
@@ -77,7 +77,7 @@ services:
       bash -c "airflow db migrate && airflow users create
       --username admin --password admin
       --firstname Admin --lastname User
-      --role Admin --email admin@example.com"
+      --role Admin --email admin@example.com || true"
     depends_on:
       airflow_db:
         condition: service_healthy

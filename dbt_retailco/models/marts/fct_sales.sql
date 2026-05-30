@@ -4,18 +4,19 @@ select
                                         as sales_sk,
     oi.order_item_id,
     oi.order_id,
-    to_char(o.created_at, 'YYYYMMDD')::integer
-                                        as date_sk,
+    coalesce(
+        to_char(o.ordered_at, 'YYYYMMDD')::integer,
+        to_char(oi.created_at, 'YYYYMMDD')::integer
+    )                                   as date_sk,
     dc.customer_sk,
     dp.product_sk,
     ds.store_sk,
     de.employee_sk,
     oi.quantity,
     oi.unit_price,
-    oi.discount_amount,
-    (oi.quantity * oi.unit_price)       as gross_revenue,
-    (oi.quantity * oi.unit_price) - oi.discount_amount
-                                        as net_revenue
+    o.discount_amount,
+    oi.gross_revenue,
+    oi.net_revenue
 from {{ ref('stg_order_items') }} oi
 left join {{ ref('stg_orders') }} o
     on o.order_id = oi.order_id

@@ -17,10 +17,12 @@ select
     p.amount_paid,
     p.is_refund
 from valid_payments p
+left join {{ ref('stg_orders') }} o
+    on o.order_id = p.order_id
 left join {{ ref('dim_customer') }} dc
     on dc.customer_id = p.customer_id
     and dc.is_current = true
 left join {{ ref('dim_store') }} ds
-    on ds.store_id = p.store_id
+    on ds.store_id = o.store_id
 left join {{ ref('dim_payment_method') }} dpm
     on dpm.method_name = p.payment_method

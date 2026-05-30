@@ -18,7 +18,6 @@ ENTITIES = [
     "order_items",
     "payments",
     "inventory_movements",
-    "categories"
 ]
 
 

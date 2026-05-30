@@ -4,7 +4,7 @@ dbt_retailco:
     dev:
       type: postgres
       host: "{{ env_var('WH_HOST') }}"
-      port: 5434
+      port: 5432
       user: "{{ env_var('WH_USER') }}"
       password: "{{ env_var('WH_PASSWORD') }}"
       dbname: "{{ env_var('WH_DB') }}"

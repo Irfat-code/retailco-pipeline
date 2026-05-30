@@ -4,10 +4,14 @@ with source as (
 renamed as (
     select
         id::varchar                 as employee_id,
-        name::varchar               as employee_name,
-        role::varchar               as role,
         store_id::varchar           as store_id,
-        hire_date::date             as hire_date,
+        first_name::varchar         as first_name,
+        last_name::varchar          as last_name,
+        (first_name || ' ' || last_name)::varchar as employee_name,
+        email::varchar              as email,
+        role::varchar               as role,
+        hired_date::date            as hire_date,
+        is_deleted::boolean         as is_deleted,
         created_at::timestamptz     as created_at,
         updated_at::timestamptz     as updated_at
     from source

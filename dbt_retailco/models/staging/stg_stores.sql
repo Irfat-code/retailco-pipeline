@@ -7,7 +7,10 @@ renamed as (
         name::varchar               as store_name,
         city::varchar               as city,
         state::varchar              as state,
-        manager_id::varchar         as manager_employee_id,
+        address::text               as address,
+        phone::varchar              as phone,
+        manager_name::varchar       as manager_name,
+        opened_date::date           as opened_date,
         created_at::timestamptz     as created_at,
         updated_at::timestamptz     as updated_at
     from source
