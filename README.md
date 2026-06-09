@@ -3,41 +3,44 @@
 A production-grade data pipeline for RetailCo, a Nigerian retail chain with stores in Lagos, Abuja, Port Harcourt, and Kano.
 
 ## Architecture
-ERP REST API → Python Extractor → Lake DB (PostgreSQL) → dlt → Warehouse DB (PostgreSQL) → dbt → Analytics
+ERP REST API -> Python Extractor -> Lake DB (PostgreSQL) -> dlt -> Warehouse DB (PostgreSQL) -> dbt -> Analytics
 
 Orchestrated by Apache Airflow running on Docker.
 
 ## Project Structure
+
+```text
 retailco-pipeline/
-├── .env.example              # Environment variable template
-├── docker-compose.yml        # All infrastructure as containers
-├── design/                   # Design artifacts
-│   ├── bus_matrix.md         # Kimball bus matrix
-│   ├── erd.md                # Warehouse ERD
-│   ├── erd.png               # Visual ERD diagram
-│   └── architecture.md       # Architecture diagram
+├── .env.example                 # Environment variable template
+├── docker-compose.yml           # All infrastructure as containers
+├── design/
+│   ├── bus_matrix.md            # Kimball bus matrix
+│   ├── erd.md                   # Warehouse ERD
+│   ├── erd.png                  # Visual ERD diagram
+│   └── architecture.md          # Architecture diagram
 ├── init_scripts/
-│   └── lake_init.sql         # Creates raw schema + watermarks table
+│   └── lake_init.sql            # Creates raw schema + watermarks table
 ├── extractor/
-│   ├── erp_extractor.py      # Python ERP extractor
+│   ├── erp_extractor.py         # Python ERP extractor
 │   └── requirements.txt
 ├── dlt_pipeline/
-│   ├── lake_to_warehouse.py  # dlt pipeline
+│   ├── lake_to_warehouse.py     # dlt pipeline
 │   └── requirements.txt
 ├── dbt_retailco/
 │   ├── models/
-│   │   ├── staging/          # stg_.sql models
-│   │   └── marts/            # dim_.sql + fct_*.sql
-│   └── snapshots/            # SCD2 snapshots
+│   │   ├── staging/            # stg_*.sql models
+│   │   └── marts/              # dim_*.sql + fct_*.sql
+│   └── snapshots/              # SCD2 snapshots
 └── airflow/
-└── dags/
-└── retailco_pipeline_dag.py
+    └── dags/
+        └── retailco_pipeline_dag.py
+```
 
 ## Prerequisites
 
 - Docker Desktop (running)
 - Git
-- Your team API key from HNG
+- API key from HNG
 
 ## Setup
 
@@ -52,18 +55,24 @@ cd retailco-pipeline
 cp .env.example .env
 ```
 
+### Environment Variables
+
 Open `.env` and fill in your real API key:
-ERP_API_KEY=your_actual_api_key_here
+
+```env
+ERP_API_KEY=your_api_key
 LAKE_HOST=lake_db
 LAKE_PORT=5432
 LAKE_DB=lake
-LAKE_USER=lake_user
-LAKE_PASSWORD=lake_pass
+LAKE_USER=<your_user>
+LAKE_PASSWORD=<your_password>
+
 WH_HOST=warehouse_db
 WH_PORT=5432
 WH_DB=warehouse
-WH_USER=wh_user
-WH_PASSWORD=wh_pass
+WH_USER=<your_user>
+WH_PASSWORD=<your_password>
+```
 
 **3. Start all containers:**
 ```bash
@@ -89,7 +98,7 @@ Login: `admin` / `admin`
 
 - Find `retailco_pipeline`
 - Click the toggle to unpause it
-- Click the ▶ button to trigger a run
+- Click the ▶️ button to trigger a run
 
 **3. Watch it run:**
 
