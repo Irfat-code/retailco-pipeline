@@ -34,7 +34,7 @@ services:
       POSTGRES_USER: ${LAKE_USER}
       POSTGRES_PASSWORD: ${LAKE_PASSWORD}
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - lake_data:/var/lib/postgresql/data
       - ./init_scripts/lake_init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -50,7 +50,7 @@ services:
       POSTGRES_USER: ${WH_USER}
       POSTGRES_PASSWORD: ${WH_PASSWORD}
     ports:
-      - "5434:5432"
+      - "127.0.0.1:5434:5432"
     volumes:
       - warehouse_data:/var/lib/postgresql/data
     healthcheck:
@@ -85,7 +85,7 @@ services:
   airflow-webserver:
     <<: *airflow-common
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     command: webserver
     depends_on:
       airflow_db:

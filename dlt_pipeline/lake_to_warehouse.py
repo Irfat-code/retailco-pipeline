@@ -1,23 +1,27 @@
 """
 dlt pipeline: moves data from Lake DB (raw schema) → Warehouse DB (raw schema)
-write_disposition='merge' makes it idempotent — running twice won't duplicate rows
+Uses incremental loading - only moves new/updated rows
 """
 import os
 import dlt
 from dlt.sources.sql_database import sql_database
+from dlt.sources.incremental import Incremental
 from dotenv import load_dotenv
 
 load_dotenv()
 
-ENTITIES = [
+INCREMENTAL_ENTITIES = [
     "customers",
     "products",
-    "stores",
-    "employees",
     "orders",
     "order_items",
     "payments",
     "inventory_movements",
+]
+
+FULL_ENTITIES = [
+    "stores",
+    "employees",
 ]
 
 
@@ -37,15 +41,25 @@ def run_dlt_pipeline(**context):
             f"@{os.environ['LAKE_HOST']}:{os.environ['LAKE_PORT']}/{os.environ['LAKE_DB']}"
         ),
         schema="raw",
-        table_names=ENTITIES,
+        table_names=INCREMENTAL_ENTITIES + FULL_ENTITIES,
     )
 
-    # merge = idempotent and incremental, never replaces everything
-    for resource in source.resources.values():
-        resource.apply_hints(
-            write_disposition="merge",
-            primary_key=["id"]
-        )
+    # Incremental loading for entities that have updated_at
+    for name in INCREMENTAL_ENTITIES:
+        if name in source.resources:
+            source.resources[name].apply_hints(
+                write_disposition="merge",
+                primary_key=["id"],
+                incremental=Incremental("updated_at"),
+            )
+
+    # Full load for small reference tables
+    for name in FULL_ENTITIES:
+        if name in source.resources:
+            source.resources[name].apply_hints(
+                write_disposition="merge",
+                primary_key=["id"],
+            )
 
     load_info = pipeline.run(source)
 
@@ -55,6 +69,5 @@ def run_dlt_pipeline(**context):
     print(load_info)
 
 
-# Allows running directly for testing
 if __name__ == "__main__":
     run_dlt_pipeline()
