@@ -1,5 +1,8 @@
 x-airflow-common: &airflow-common
-  image: apache/airflow:2.9.2
+  build:
+    context: .
+    dockerfile: Dockerfile.airflow
+  image: retailco-airflow:latest
   env_file:
     - .env
   environment:
